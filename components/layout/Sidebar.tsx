@@ -7,6 +7,7 @@ const nav = [
   { label: "Evaluación", href: "/evaluation" },
   { label: "Usuarios", href: "/users" },
   { label: "Reportes", href: "/reports" },
+  { label: "Evaluación (Admin)", href: "/evaluation/admin" },
 ];
 
 export default function Sidebar() {

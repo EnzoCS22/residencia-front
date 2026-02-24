@@ -10,6 +10,7 @@ const titles: Record<string, { title: string; subtitle: string }> = {
   "/evaluation": { title: "Mi desempeño", subtitle: "Rendimiento actual." },
   "/users": { title: "Usuarios", subtitle: "Control de acceso." },
   "/reports": { title: "Reportes", subtitle: "Indicadores clave." },
+  "/evaluation/admin": { title: "Evaluación", subtitle: "Desempeño del equipo." },
 };
 
 function formatDate(date: Date) {
