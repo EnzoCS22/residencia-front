@@ -1,10 +1,49 @@
 "use client";
 
+import { useState } from "react";
+import { useRouter } from "next/navigation";
 import Card from "@/components/ui/Card";
 import Input from "@/components/ui/Input";
 import Button from "@/components/ui/Button";
+import Link from "next/link";
+import { login, getMe } from "@/lib/api/auth.api";
+import { saveSession } from "@/lib/auth-storage";
 
 export default function LoginPage() {
+  const router = useRouter();
+
+  const [correo, setCorreo] = useState("");
+  const [password, setPassword] = useState("");
+  const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false);
+
+  async function handleLogin(e: React.FormEvent) {
+    e.preventDefault();
+
+    setError("");
+    setLoading(true);
+
+    try {
+      const loginResponse = await login({
+        correo,
+        password,
+      });
+
+      const token = loginResponse.data.token;
+      const meResponse = await getMe(token);
+
+      saveSession(token, meResponse.data);
+
+      router.push("/dashboard");
+    } catch (err) {
+      setError(
+        err instanceof Error ? err.message : "No se pudo iniciar sesión"
+      );
+    } finally {
+      setLoading(false);
+    }
+  }
+
   return (
     <div className="min-h-screen flex items-center justify-center bg-zinc-50 px-4">
       <Card className="w-full max-w-md p-6">
@@ -18,26 +57,56 @@ export default function LoginPage() {
           </p>
         </div>
 
-        <div className="space-y-4">
+        <form onSubmit={handleLogin} className="space-y-4">
           <div>
-            <label className="text-sm font-medium text-zinc-900">Email</label>
-            <Input placeholder="name@company.com" type="email" />
+            <label className="text-sm font-medium text-zinc-900">
+              Correo electrónico
+            </label>
+            <Input
+              placeholder="name@company.com"
+              type="email"
+              value={correo}
+              onChange={(e) => setCorreo(e.target.value)}
+            />
           </div>
 
           <div>
-            <div className="flex justify-between items-center">
-              <label className="text-sm font-medium text-zinc-900">Contraseña</label>
-              <button className="text-sm text-blue-600 hover:underline">
+            <div className="flex justify-between items-center mb-1">
+              <label className="text-sm font-medium text-zinc-900">
+                Contraseña
+              </label>
+
+              <Link
+                href="/forgot-password"
+                className="text-sm text-blue-600 hover:underline"
+              >
                 ¿Olvidaste la contraseña?
-              </button>
+              </Link>
             </div>
-            <Input placeholder="••••••••" type="password" />
+
+            <Input
+              type="password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              placeholder="********"
+            />
           </div>
 
-          <Button className="w-full">Ingresar</Button>
-        </div>
+          {error ? (
+            <p className="text-sm text-red-600">{error}</p>
+          ) : null}
 
-        
+          <Button type="submit" className="w-full" disabled={loading}>
+            {loading ? "Ingresando..." : "Ingresar"}
+          </Button>
+
+          <div className="text-center text-sm text-zinc-600">
+            ¿No tienes cuenta?{" "}
+            <Link href="/register" className="text-blue-600 hover:underline">
+              Regístrate
+            </Link>
+          </div>
+        </form>
       </Card>
     </div>
   );
