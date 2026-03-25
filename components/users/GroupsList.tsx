@@ -1,63 +1,84 @@
+"use client";
+
 import Button from "@/components/ui/Button";
 import Badge from "@/components/ui/Badge";
-import { UserOption } from "@/components/users/GroupForm";
+import { UserAccount } from "@/components/users/UserRoleForm";
 
-export type Group = {
+type GroupItem = {
   id: string;
   name: string;
-  leaderId: string;
+  leaderId: string | null;
   memberIds: string[];
 };
 
 export default function GroupsList({
   groups,
   users,
-  onEdit,
-  onDelete,
+  onEditGroup,
 }: {
-  groups: Group[];
-  users: UserOption[];
-  onEdit: (g: Group) => void;
-  onDelete: (g: Group) => void;
+  groups: GroupItem[];
+  users: UserAccount[];
+  onEditGroup: (group: GroupItem) => void;
 }) {
-  const byId = new Map(users.map((u) => [u.id, u.name]));
+  function getUserName(userId: string | null) {
+    if (!userId) return "Sin líder";
+    const user = users.find((u) => u.id === userId);
+    return user ? user.name : "Sin líder";
+  }
+
+  function getMembers(memberIds: string[]) {
+    return users.filter((u) => memberIds.includes(u.id));
+  }
+
+  if (groups.length === 0) {
+    return (
+      <div className="rounded-xl border border-zinc-200 bg-white p-6 text-sm text-zinc-500">
+        No hay grupos registrados.
+      </div>
+    );
+  }
 
   return (
-    <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
-      {groups.map((g) => {
-        const leaderName = byId.get(g.leaderId) ?? "Sin líder";
-        const members = g.memberIds.map((id) => byId.get(id) ?? id);
+    <div className="grid gap-4 md:grid-cols-2">
+      {groups.map((group) => {
+        const members = getMembers(group.memberIds);
 
         return (
-          <div key={g.id} className="bg-white rounded-xl border border-zinc-200 shadow-sm p-5">
+          <div
+            key={group.id}
+            className="rounded-xl border border-zinc-200 bg-white p-5 shadow-sm"
+          >
             <div className="flex items-start justify-between gap-3">
-              <div className="min-w-0">
-                <h3 className="text-lg font-semibold text-zinc-900 truncate">{g.name}</h3>
-                <p className="text-sm text-zinc-500">
-                  Líder: <span className="font-medium text-zinc-900">{leaderName}</span>
+              <div>
+                <h3 className="text-lg font-semibold text-zinc-900">
+                  {group.name}
+                </h3>
+                <p className="text-sm text-zinc-600 mt-1">
+                  Líder: {getUserName(group.leaderId)}
                 </p>
               </div>
 
-              <div className="flex gap-2">
-                <Button variant="outline" className="h-9 px-3 text-sm" onClick={() => onEdit(g)}>
-                  Editar
-                </Button>
-                <Button variant="outline" className="h-9 px-3 text-sm" onClick={() => onDelete(g)}>
-                  Eliminar
-                </Button>
-              </div>
+              <Button
+                variant="outline"
+                className="h-9 px-3 text-sm"
+                onClick={() => onEditGroup(group)}
+              >
+                Editar
+              </Button>
             </div>
 
             <div className="mt-4">
-              <p className="text-sm font-medium text-zinc-900 mb-2">Empleados</p>
+              <p className="text-sm font-medium text-zinc-800 mb-2">
+                Miembros
+              </p>
 
               {members.length === 0 ? (
-                <p className="text-sm text-zinc-500">Sin empleados asignados.</p>
+                <p className="text-sm text-zinc-500">Sin miembros asignados.</p>
               ) : (
                 <div className="flex flex-wrap gap-2">
-                  {members.map((m) => (
-                    <Badge key={m} variant="muted">
-                      {m}
+                  {members.map((member) => (
+                    <Badge key={member.id} variant="muted">
+                      {member.name}
                     </Badge>
                   ))}
                 </div>

@@ -1,116 +1,144 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 import Button from "@/components/ui/Button";
-import Input from "@/components/ui/Input";
+import { UserAccount } from "@/components/users/UserRoleForm";
 
-export type UserOption = {
-  id: string;
+type GroupFormData = {
+  id?: string;
   name: string;
-  role: "Leader" | "Employee";
-};
-
-export type GroupFormValues = {
-  name: string;
-  leaderId: string;      // id del líder
-  memberIds: string[];   // ids de empleados
+  leaderId: string | null;
+  memberIds: string[];
 };
 
 export default function GroupForm({
-  initial,
+  mode,
+  initialData,
   users,
-  onCancel,
+  leaders,
   onSubmit,
+  onCancel,
 }: {
-  initial?: Partial<GroupFormValues>;
-  users: UserOption[];
+  mode: "create" | "edit";
+  initialData?: GroupFormData | null;
+  users: UserAccount[];
+  leaders: UserAccount[];
+  onSubmit: (data: GroupFormData) => void | Promise<void>;
   onCancel: () => void;
-  onSubmit: (values: GroupFormValues) => void;
 }) {
-  const leaders = useMemo(() => users.filter((u) => u.role === "Leader"), [users]);
-  const employees = useMemo(() => users.filter((u) => u.role === "Employee"), [users]);
-
   const [name, setName] = useState("");
   const [leaderId, setLeaderId] = useState("");
   const [memberIds, setMemberIds] = useState<string[]>([]);
 
   useEffect(() => {
-    setName(initial?.name ?? "");
-    setLeaderId(initial?.leaderId ?? (leaders[0]?.id ?? ""));
-    setMemberIds(initial?.memberIds ?? []);
-  }, [initial, leaders]);
+    if (mode === "edit" && initialData) {
+      setName(initialData.name);
+      setLeaderId(initialData.leaderId ?? "");
+      setMemberIds(initialData.memberIds ?? []);
+    } else {
+      setName("");
+      setLeaderId("");
+      setMemberIds([]);
+    }
+  }, [mode, initialData]);
 
-  function toggleMember(id: string) {
-    setMemberIds((prev) => (prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id]));
+  function handleToggleMember(userId: string) {
+    setMemberIds((prev) =>
+      prev.includes(userId)
+        ? prev.filter((id) => id !== userId)
+        : [...prev, userId]
+    );
   }
 
   function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
-    if (!name || !leaderId) return;
 
-    onSubmit({ name, leaderId, memberIds });
+    onSubmit({
+      id: initialData?.id,
+      name,
+      leaderId: leaderId || null,
+      memberIds,
+    });
   }
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-5 text-zinc-900">
+    <form
+      onSubmit={handleSubmit}
+      className="rounded-xl border border-zinc-200 bg-white p-5 shadow-sm space-y-5"
+    >
       <div>
-        <label className="text-sm font-medium">Nombre del grupo</label>
-        <Input value={name} onChange={(e) => setName(e.target.value)} placeholder="Ej. Equipo Ventas" />
+        <h3 className="text-lg font-semibold text-zinc-900">
+          {mode === "create" ? "Crear grupo" : "Editar grupo"}
+        </h3>
+        <p className="text-sm text-zinc-600 mt-1">
+          Configura el nombre, líder y miembros del grupo.
+        </p>
       </div>
 
-      {/* Líder como select */}
       <div>
-        <label className="text-sm font-medium">Líder</label>
+        <label className="block text-sm font-medium text-zinc-900 mb-1">
+          Nombre del grupo
+        </label>
+        <input
+          type="text"
+          value={name}
+          onChange={(e) => setName(e.target.value)}
+          placeholder="Ej. Equipo Backend"
+          className="w-full rounded-lg border border-zinc-300 px-3 py-2 text-zinc-900 focus:outline-none focus:ring-2 focus:ring-blue-500"
+        />
+      </div>
+
+      <div>
+        <label className="block text-sm font-medium text-zinc-900 mb-1">
+          Líder
+        </label>
         <select
           value={leaderId}
           onChange={(e) => setLeaderId(e.target.value)}
-          className="w-full border border-zinc-300 bg-white px-3 py-2 rounded-lg
-                     text-zinc-900 focus:outline-none focus:ring-2 focus:ring-blue-500"
+          className="w-full rounded-lg border border-zinc-300 px-3 py-2 text-zinc-900 focus:outline-none focus:ring-2 focus:ring-blue-500"
         >
-          {leaders.map((l) => (
-            <option key={l.id} value={l.id} className="text-zinc-900 bg-white">
-              {l.name}
+          <option value="">Selecciona un líder</option>
+          {leaders.map((leader) => (
+            <option key={leader.id} value={leader.id}>
+              {leader.name}
             </option>
           ))}
         </select>
       </div>
 
-      {/* Empleados como checkboxes */}
       <div>
-        <label className="text-sm font-medium">Empleados asignados</label>
+        <label className="block text-sm font-medium text-zinc-900 mb-2">
+          Miembros
+        </label>
 
-        <div className="mt-2 border border-zinc-200 rounded-xl p-3 bg-white max-h-56 overflow-auto">
-          <div className="space-y-2">
-            {employees.map((emp) => {
-              const checked = memberIds.includes(emp.id);
-              return (
-                <label
-                  key={emp.id}
-                  className="flex items-center gap-3 p-2 rounded-lg hover:bg-zinc-50 cursor-pointer"
-                >
-                  <input
-                    type="checkbox"
-                    checked={checked}
-                    onChange={() => toggleMember(emp.id)}
-                    className="h-4 w-4"
-                  />
-                  <span className="text-sm text-zinc-900">{emp.name}</span>
-                </label>
-              );
-            })}
-          </div>
+        <div className="max-h-56 overflow-y-auto rounded-lg border border-zinc-200 p-3 space-y-2">
+          {users.length === 0 ? (
+            <p className="text-sm text-zinc-500">No hay usuarios disponibles.</p>
+          ) : (
+            users.map((user) => (
+              <label
+                key={user.id}
+                className="flex items-center gap-3 text-sm text-zinc-800"
+              >
+                <input
+                  type="checkbox"
+                  checked={memberIds.includes(user.id)}
+                  onChange={() => handleToggleMember(user.id)}
+                />
+                <span>{user.name}</span>
+              </label>
+            ))
+          )}
         </div>
-
-        <p className="text-xs text-zinc-500 mt-2">
-          Seleccionados: <span className="font-medium text-zinc-900">{memberIds.length}</span>
-        </p>
       </div>
 
-      <div className="flex justify-end gap-3 pt-2">
+      <div className="flex justify-end gap-3">
         <Button type="button" variant="outline" onClick={onCancel}>
           Cancelar
         </Button>
-        <Button type="submit">Guardar</Button>
+        <Button type="submit">
+          {mode === "create" ? "Crear grupo" : "Guardar cambios"}
+        </Button>
       </div>
     </form>
   );
