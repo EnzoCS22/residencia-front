@@ -3,11 +3,10 @@ import Link from "next/link";
 const nav = [
   { label: "Dashboard", href: "/dashboard" },
   { label: "Sprints", href: "/sprints" },
-  { label: "Crear Tareas", href: "/tasks/create" },
-  { label: "Evaluación", href: "/evaluation" },
+  { label: "Tareas", href: "/tasks/create" },
+  { label: "Desempeño", href: "/evaluation" },
   { label: "Usuarios", href: "/users" },
-  { label: "Reportes", href: "/reports" },
-  { label: "Evaluación (Admin)", href: "/evaluation/admin" },
+  { label: "Evaluación", href: "/evaluation/admin" },
 ];
 
 export default function Sidebar() {

@@ -3,7 +3,8 @@ export type BackendSprint = {
   nombre_sprint: string;
   fecha_inicio: string;
   fecha_fin: string;
-  estado: 'activo' | 'cerrado';
+  estado: "activo" | "cerrado";
+  total_tareas?: number;
 };
 
 export type FrontSprint = {
@@ -11,19 +12,25 @@ export type FrontSprint = {
   name: string;
   startDate: string;
   endDate: string;
-  status: 'activo' | 'cerrado';
+  tasks: number;
+  status: "Activo" | "Completado";
 };
 
-export function mapSprintFromApi(sprint: BackendSprint): FrontSprint {
+function formatDate(date: string) {
+  return date.split("T")[0];
+}
+
+export function mapSprintFromApi(s: BackendSprint): FrontSprint {
   return {
-    id: sprint.id_sprint,
-    name: sprint.nombre_sprint,
-    startDate: sprint.fecha_inicio,
-    endDate: sprint.fecha_fin,
-    status: sprint.estado
+    id: s.id_sprint,
+    name: s.nombre_sprint,
+    startDate: formatDate(s.fecha_inicio),
+    endDate: formatDate(s.fecha_fin),
+    tasks: s.total_tareas ?? 0,
+    status: s.estado === "activo" ? "Activo" : "Completado",
   };
 }
 
-export function mapSprintsFromApi(sprints: BackendSprint[] = []): FrontSprint[] {
-  return sprints.map(mapSprintFromApi);
+export function mapSprintsFromApi(data: BackendSprint[] = []): FrontSprint[] {
+  return data.map(mapSprintFromApi);
 }

@@ -1,10 +1,17 @@
 "use client";
 
 import Button from "@/components/ui/Button";
+import Input from "@/components/ui/Input";
+
+type SprintOption = {
+  id: string;
+  name: string;
+};
 
 export default function ReportFilters({
   sprint,
   onChangeSprint,
+  sprintOptions,
   group,
   onChangeGroup,
   dateFrom,
@@ -15,72 +22,82 @@ export default function ReportFilters({
   onExportCsv,
 }: {
   sprint: string;
-  onChangeSprint: (v: string) => void;
-
+  onChangeSprint: (value: string) => void;
+  sprintOptions: SprintOption[];
   group: string;
-  onChangeGroup: (v: string) => void;
-
+  onChangeGroup: (value: string) => void;
   dateFrom: string;
   dateTo: string;
-  onChangeDateFrom: (v: string) => void;
-  onChangeDateTo: (v: string) => void;
-
+  onChangeDateFrom: (value: string) => void;
+  onChangeDateTo: (value: string) => void;
   groups: string[];
   onExportCsv: () => void;
 }) {
   return (
-    <div className="bg-white border border-zinc-200 rounded-xl p-4 shadow-sm flex flex-wrap gap-4 items-end">
-      <div>
-        <label className="block text-sm font-medium text-zinc-700">Sprint</label>
-        <select
-          value={sprint}
-          onChange={(e) => onChangeSprint(e.target.value)}
-          className="mt-1 border border-zinc-300 rounded-lg px-3 py-2 text-sm bg-white text-zinc-900"
-        >
-          <option value="1" className="text-zinc-900 bg-white">Sprint 1 - Onboarding</option>
-          <option value="2" className="text-zinc-900 bg-white">Sprint 2 - Core Features</option>
-          <option value="3" className="text-zinc-900 bg-white">Sprint 3 - Evaluaciones</option>
-        </select>
-      </div>
+    <div className="rounded-xl border border-zinc-200 bg-white p-4 shadow-sm">
+      <div className="grid grid-cols-1 gap-4 md:grid-cols-5">
+        <div>
+          <label className="mb-1 block text-sm font-medium text-zinc-900">
+            Sprint
+          </label>
+          <select
+            value={sprint}
+            onChange={(e) => onChangeSprint(e.target.value)}
+            className="w-full rounded-lg border border-zinc-300 bg-white px-3 py-2 text-zinc-900 focus:outline-none focus:ring-2 focus:ring-blue-500"
+          >
+            <option value="">Todos</option>
+            {sprintOptions.map((s) => (
+              <option key={s.id} value={s.id}>
+                {s.name}
+              </option>
+            ))}
+          </select>
+        </div>
 
-      <div>
-        <label className="block text-sm font-medium text-zinc-700">Grupo</label>
-        <select
-          value={group}
-          onChange={(e) => onChangeGroup(e.target.value)}
-          className="mt-1 border border-zinc-300 rounded-lg px-3 py-2 text-sm bg-white text-zinc-900"
-        >
-          <option value="Todos" className="text-zinc-900 bg-white">Todos</option>
-          {groups.map((g) => (
-            <option key={g} value={g} className="text-zinc-900 bg-white">
-              {g}
-            </option>
-          ))}
-        </select>
-      </div>
+        <div>
+          <label className="mb-1 block text-sm font-medium text-zinc-900">
+            Grupo
+          </label>
+          <select
+            value={group}
+            onChange={(e) => onChangeGroup(e.target.value)}
+            className="w-full rounded-lg border border-zinc-300 bg-white px-3 py-2 text-zinc-900 focus:outline-none focus:ring-2 focus:ring-blue-500"
+          >
+            {groups.map((g) => (
+              <option key={g} value={g}>
+                {g}
+              </option>
+            ))}
+          </select>
+        </div>
 
-      <div>
-        <label className="block text-sm font-medium text-zinc-700">Desde</label>
-        <input
-          type="date"
-          value={dateFrom}
-          onChange={(e) => onChangeDateFrom(e.target.value)}
-          className="mt-1 border border-zinc-300 rounded-lg px-3 py-2 text-sm bg-white text-zinc-900"
-        />
-      </div>
+        <div>
+          <label className="mb-1 block text-sm font-medium text-zinc-900">
+            Desde
+          </label>
+          <Input
+            type="date"
+            value={dateFrom}
+            onChange={(e) => onChangeDateFrom(e.target.value)}
+          />
+        </div>
 
-      <div>
-        <label className="block text-sm font-medium text-zinc-700">Hasta</label>
-        <input
-          type="date"
-          value={dateTo}
-          onChange={(e) => onChangeDateTo(e.target.value)}
-          className="mt-1 border border-zinc-300 rounded-lg px-3 py-2 text-sm bg-white text-zinc-900"
-        />
-      </div>
+        <div>
+          <label className="mb-1 block text-sm font-medium text-zinc-900">
+            Hasta
+          </label>
+          <Input
+            type="date"
+            value={dateTo}
+            onChange={(e) => onChangeDateTo(e.target.value)}
+          />
+        </div>
 
-      <div className="ml-auto">
-        <Button onClick={onExportCsv}>Exportar CSV</Button>
+        <div className="flex items-end">
+          <Button className="w-full" onClick={onExportCsv}>
+            Exportar CSV
+          </Button>
+        </div>
       </div>
     </div>
   );
